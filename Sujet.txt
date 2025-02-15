@@ -1,0 +1,25 @@
+Calculer les émissions de carbone de l'électricité dans la simulation de systèmes distribués
+
+Descriptif :
+
+Chaque région du monde possède un mix énergétique différent, entraînant des niveaux d’émissions de CO2 variables. Par exemple : https://app.electricitymaps.com/map/72h/hourly.
+
+L’objectif de ce projet est d’intégrer le calcul des émissions de CO2 liées à la consommation d’électricité dans un simulateur, afin d’aider les chercheurs travaillant sur la soutenabilité numérique.
+
+SimGrid est un simulateur de systèmes distribués. Il propose plusieurs plugins permettant d’étendre ses fonctionnalités. L’idée est d’étendre le plugin de calcul d’énergie afin d’y intégrer le calcul des émissions de CO2.
+
+Compétences à développer :
+
+- Gestion de version avec Git
+
+- Développement piloté par les tests (TDD)
+
+- Programmation en C++
+
+- Développement de logiciels open source pour la communauté scientifique
+
+https://simgrid.org
+
+https://simgrid.org/doc/latest/Plugins.html
+
+https://framagit.org/simgrid/simgrid/-/blob/master/src/plugins/host_energy.cpp
