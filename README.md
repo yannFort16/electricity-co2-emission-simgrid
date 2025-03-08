@@ -24,3 +24,18 @@ Le plugin a une classe qui permet d’utiliser les données facilement (la class
     <li>Autres cas à déterminer une fois que le projet aura un peu plus avancé</li>
   </ul>
 </p>
+###Modification du 8/03 suite à la réunion de 5/03
+
+<p> L’affichage dans le plugin host_energy se fait par fonction on_host_destruction(). Lorsqu’une simulation se termine, les informations … lors de la simulation sont affichées. Il sera donc nécessaire que nous modifions la fonction on_host_destruction() et la fonction on_simulation_end() pour qu’elles n’affichent plus la consommation en Joules des hosts et la consommation totale en Joules respectivement, mais qu’elles affichent les émissions de CO2 faites par les hosts et les émissions totales. 
+</p>
+
+<p> Pour automatiser les tests et pour pouvoir garantir une validation du plugin, nous allons modifier les fichiers s4u-enregy-exec.cpp et s4u-enregy-exec.tesh. Il faudra modifier s4u-enregy-exec.cpp pour qu’il utilise le plugin que nous allons créer et non le plugin host_energy. De plus, il faudra modifier s4u-enregy-exec.tesh pour qu’il puisse traiter le nouvel affichage de notre plugin. Les lignes à modifier sont les lignes 19 à 23 incluses. 
+</p>
+
+<p>Pour permettre de traiter la localisation des hosts, nous allons ajouter un argument lorsqu’ils seront définis dans le fichier XML avec la syntaxe : <br> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;prop id = “file title in program” value = “file path/file name.csv”/&gt; <br> 
+Cette syntaxe sera utilisée à partir de la deuxième partie du projet qui porte sur la localisation des hosts.</p>
+
+
+
+
