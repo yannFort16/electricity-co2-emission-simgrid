@@ -24,7 +24,8 @@ Le plugin a une classe qui permet d’utiliser les données facilement (la class
     <li>Autres cas à déterminer une fois que le projet aura un peu plus avancé</li>
   </ul>
 </p>
-###Modification du 8/03 suite à la réunion de 5/03
+
+### Modification du 8/03 suite à la réunion de 5/03
 
 <p> L’affichage dans le plugin host_energy se fait par fonction on_host_destruction(). Lorsqu’une simulation se termine, les informations … lors de la simulation sont affichées. Il sera donc nécessaire que nous modifions la fonction on_host_destruction() et la fonction on_simulation_end() pour qu’elles n’affichent plus la consommation en Joules des hosts et la consommation totale en Joules respectivement, mais qu’elles affichent les émissions de CO2 faites par les hosts et les émissions totales. 
 </p>
