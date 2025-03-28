@@ -1,6 +1,6 @@
 #include "simgrid/s4u.hpp"
 
-//Change this to include your full directroy path to emission .h file
+//Change this to include your full directroy path to emission .h file   
 #include "/home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "Messages specific for this s4u example");
@@ -8,7 +8,11 @@ namespace sg4 = simgrid::s4u;
 
 void test_execution() {
     sg4::Host* host1 = sg4::Host::by_name("MyHost1");
-    //sg4::Host* host2 = sg4::Host::by_name("MyHost2");
+    sg4::Host* host2 = sg4::Host::by_name("MyHost2");
+    sg4::Host* host3 = sg4::Host::by_name("MyHost3");
+    host1->turn_on();
+    host2->turn_off();
+    host3->turn_off();
 
     if (!host1) {
         XBT_ERROR("Hosts not found");
@@ -30,7 +34,9 @@ void test_execution() {
     start = sg4::Engine::get_clock();
     double flopAmount = 100E6;
     XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    
     sg4::this_actor::execute(flopAmount);
+    
     XBT_INFO(
       "Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission =%.0f g",
       sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1));
