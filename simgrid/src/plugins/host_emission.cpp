@@ -15,6 +15,9 @@
 #include <boost/algorithm/string/split.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <filesystem>
 
 SIMGRID_REGISTER_PLUGIN(host_emission, "Cpu CO2 emisson besed on energy consumption.", &sg_host_emission_plugin_init)
 
@@ -24,63 +27,78 @@ static void on_simulation_end();
 
 namespace simgrid::plugin {
 
+
 class HostEmissions {
     simgrid::s4u::Host* host_ = nullptr;
 
-    int EMISSION_FR = 42; // g CO2/kWh in France on the 11/03/2025
+    double emission_value = 42.0; // g CO2/kWh in France on the 11/03/2025 used as default value
     double total_emissions_  = 0.0;
     double last_updated_  = simgrid::s4u::Engine::get_clock(); /*< Timestamp of the last energy update event*/
-    bool host_was_used_ = false;
+    std::string country = "No data";  
+    bool host_was_used_ = false; // Tracks whether the host was used
 
     friend void ::on_simulation_end(); // For access to host_was_used_
     double JouleToWattH(double energy) { return energy / 3600.0; }
 public:    
     static simgrid::xbt::Extension<simgrid::s4u::Host, HostEmissions> EXTENSION_ID;
-    //explicit HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr) {}
     explicit HostEmissions(simgrid::s4u::Host* ptr);
     ~HostEmissions();
     
     double get_emission();
     double get_last_update_time() const { return last_updated_; }
     void update(); 
-    void setCO2(int newCO2){EMISSION_FR = newCO2;};
+    void setCO2(int newCO2){emission_value = newCO2;};
+    double getCO2(){return emission_value;};
+    std::string getCountry(){return country;};
+private :
+    double read_emission_file(std::filesystem::path emission_file);
 };
 
 simgrid::xbt::Extension<simgrid::s4u::Host, HostEmissions> HostEmissions::EXTENSION_ID;
 
-/*void HostEmissions::update() {
-    double start_time  = last_updated_;
-    double finish_time = simgrid::s4u::Engine::get_clock();
-    //
-    // We may have start == finish if the past consumption was updated since the simcall was started
-    // for example if 2 actors requested to update the same host's consumption in a given scheduling round.
-    //
-    // Even in this case, we need to save the pstate for the next call (after this if),
-    // which may have changed since that recent update.
-    if (start_time < finish_time) {
-      double previous_emissions = total_emissions_;
-      /*
-      double power_consumption = sg_host_get_current_consumption(host_);
 
-      double emissions_this_step = JouleToWattH(power_consumption) * EMISSION_FR; *  /
-      double emissions_this_step = sg_host_get_current_consumption(host_) * EMISSION_FR;
-      // TODO Trace: Trace energy_this_step from start_time to finish_time in host->getName()
-          
-      total_emissions_ = previous_emissions + emissions_this_step;
-      last_updated_ = finish_time;
-          
-      XBT_DEBUG("[update_emission of %s] period=[%.8f-%.8f]; total emission before: %.8f gCO2 -> added now: %.8f gCO2",
-        host_->get_cname(), start_time, finish_time, previous_emissions, emissions_this_step);
+double HostEmissions::read_emission_file(std::filesystem::path emission_file){
+  //TODO: Read the emission file and set the emission_value variable
+  
+  double newEmissionValue = -1.0;
+  std::ifstream file(emission_file);
+    if (!file.is_open()) {
+      XBT_INFO("Could not open CSV file %s/%s", std::filesystem::current_path().string().c_str(), emission_file.string().c_str());
+      return newEmissionValue;
+
     }
-          
-}*/
+
+    std::string line;
+    //std::vector<EmissionData> emissions;
+    std::getline(file, line); // Skip header line
+    std::getline(file, line); // Read the first data line
+    std::stringstream ss(line);
+    std::string token;
+
+    std::getline(ss, token, ','); // Skip datetime
+    std::getline(ss, token, ','); // Get country
+    country = std::string(token);
+    std::getline(ss, token, ','); // Skip ZoneName
+    std::getline(ss, token, ','); // Skip ZoneId
+    std::getline(ss, token, ','); // Get gCO2/kWh
+    try {
+      token.erase(0, token.find_first_not_of(" \t\n\r")); // Trim leading whitespace
+      token.erase(token.find_last_not_of(" \t\n\r") + 1); // Trim trailing whitespace
+      newEmissionValue = std::stod(token);
+    } catch (const std::invalid_argument& e) {
+      XBT_INFO("Invalid emission value in CSV file: '%s'", token.c_str());
+      return newEmissionValue;
+    }
+
+  return newEmissionValue;
+}
 
 void HostEmissions::update() {
   double start_time  = last_updated_;
   double finish_time = simgrid::s4u::Engine::get_clock();
   if (start_time < finish_time) {
     double previous_emissions = total_emissions_;
-    total_emissions_ = JouleToWattH(sg_host_get_consumed_energy(host_)) * EMISSION_FR;
+    total_emissions_ = JouleToWattH(sg_host_get_consumed_energy(host_)) * emission_value;
     
     double emissions_this_step = total_emissions_ - previous_emissions;
     // TODO Trace: Trace energy_this_step from start_time to finish_time in host->getName()
@@ -96,7 +114,19 @@ void HostEmissions::update() {
 HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr)
 {
       //Todo when ussig <prop> in order get the emission by country
-      //const char* emission_file = host_->get_property("emission_file");
+      const char* emission_file = host_->get_property("emission_file");
+
+      std::string full_path = std::string("../ressources/") + emission_file;
+
+      std::filesystem::path p = full_path;
+
+      std::filesystem::path t = std::filesystem::current_path() / full_path;
+      int v = read_emission_file(p);
+      if (v != -1) {
+          emission_value = v;
+      } else {
+          XBT_INFO("Emission file not found or invalid %s, using default value: %f gCO2/kWh", t.string().c_str(), emission_value);
+      }
 }
 
 
@@ -112,12 +142,9 @@ double HostEmissions::get_emission(){
 }
 
 }
-//simgrid::xbt::Extension<simgrid::s4u::Host, simgrid::plugin::HostEmissions>
-//simgrid::plugin::HostEmissions::EXTENSION_ID;
 
 using simgrid::plugin::HostEmissions;
 /* **************************** events  callback *************************** */
-//extern void (*on_creation_ptr)(simgrid::s4u::Host*);
 static void on_creation(simgrid::s4u::Host& host)
 {
     //on_creation_ptr(&host);
@@ -128,7 +155,6 @@ static void on_creation(simgrid::s4u::Host& host)
     host.extension_set(new HostEmissions(&host));
 }
 
-//extern void (*on_action_state_change_ptr)(simgrid::kernel::resource::CpuAction const&, simgrid::kernel::resource::Action::State);
 static void on_action_state_change(simgrid::kernel::resource::CpuAction const& action,
                                    simgrid::kernel::resource::Action::State /*previous*/)
 {
@@ -149,7 +175,7 @@ static void on_action_state_change(simgrid::kernel::resource::CpuAction const& a
     }
 }
 
-//extern void (*on_host_change_ptr)(simgrid::s4u::Host const&);
+
 /* This callback is fired either when the host changes its state (on/off) ("onStateChange") or its speed
  * (because the user changed the pstate, or because of external trace events) ("onSpeedChange") */
 static void on_host_change(simgrid::s4u::Host const& h)
@@ -186,7 +212,6 @@ static void on_simulation_end()
      total_emission, used_hosts_emission, total_emission- used_hosts_emission);
 }
 
-//extern void (*on_activity_suspend_resume_ptr)(simgrid::s4u::Activity const&);
 static void on_activity_suspend_resume(simgrid::s4u::Activity const& activity)
 {
   if (const auto* action = dynamic_cast<simgrid::kernel::resource::CpuAction*>(activity.get_impl()->model_action_))
@@ -254,6 +279,16 @@ double sg_host_get_emission(const_sg_host_t host) {
     return host->extension<HostEmissions>()->get_emission();
 }
 
-void sg_host_setCO2(const_sg_host_t host, int newCO2){
+void sg_host_setCO2(const_sg_host_t host, double newCO2){
   host->extension<HostEmissions>()->setCO2(newCO2);
+}
+
+double sg_host_get_CO2(const_sg_host_t host){
+  ensure_plugin_inited();
+  return host->extension<HostEmissions>()->getCO2();
+}
+
+std::string sg_host_get_country(const_sg_host_t host){
+  ensure_plugin_inited();
+  return host->extension<HostEmissions>()->getCountry();
 }
