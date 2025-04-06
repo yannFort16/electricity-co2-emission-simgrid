@@ -27,7 +27,7 @@ namespace simgrid::plugin {
 class HostEmissions {
     simgrid::s4u::Host* host_ = nullptr;
 
-    const int EMISSION_FR = 42; // g CO2/kWh in France on the 11/03/2025
+    int EMISSION_FR = 42; // g CO2/kWh in France on the 11/03/2025
     double total_emissions_  = 0.0;
     double last_updated_  = simgrid::s4u::Engine::get_clock(); /*< Timestamp of the last energy update event*/
     bool host_was_used_ = false;
@@ -42,7 +42,8 @@ public:
     
     double get_emission();
     double get_last_update_time() const { return last_updated_; }
-    void update();  
+    void update(); 
+    void setCO2(int newCO2){EMISSION_FR = newCO2;};
 };
 
 simgrid::xbt::Extension<simgrid::s4u::Host, HostEmissions> HostEmissions::EXTENSION_ID;
@@ -251,4 +252,8 @@ static void ensure_plugin_inited()
 double sg_host_get_emission(const_sg_host_t host) {
     ensure_plugin_inited();
     return host->extension<HostEmissions>()->get_emission();
+}
+
+void sg_host_setCO2(const_sg_host_t host, int newCO2){
+  host->extension<HostEmissions>()->setCO2(newCO2);
 }

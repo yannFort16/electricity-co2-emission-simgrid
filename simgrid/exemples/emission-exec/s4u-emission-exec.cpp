@@ -16,12 +16,12 @@ void test_execution() {
     host1->turn_on();
     host2->turn_off();
     host3->turn_off();
-
     if (!host1) {
         XBT_ERROR("Hosts not found");
         return;
     }
 
+    
     double start = sg4::Engine::get_clock();
     XBT_INFO("Sleep for 10 seconds");
     sg4::this_actor::sleep_for(10);
@@ -37,25 +37,59 @@ void test_execution() {
     
     //Executer une tache
     start = sg4::Engine::get_clock();
-    double flopAmount = 100E6;
+    double flopAmount = 100E7;
     XBT_INFO("Run a computation of %.0E flops", flopAmount);
     
     sg4::this_actor::execute(flopAmount);
     
     XBT_INFO(
       "Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission =%.0f g",
-      sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1));
+      sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emission1);
 
     //Executer 2 tache
-    //A Faire
+    host2->turn_on();
+    start = sg4::Engine::get_clock();
 
-
+    double flopAmount1 = 100E6;
+    double flopAmount2 = 60E6;
+    XBT_INFO("Run a computation of %.0E flops on host1, Run a computation of %.0E flops on host2", flopAmount1, flopAmount2);
+    simgrid::s4u::ExecPtr exec1 = host1->exec_init(flopAmount1);
+    simgrid::s4u::ExecPtr exec2 = host2->exec_init(flopAmount2);
+    exec1->start();
+    exec2->start();
+    exec1->wait();
+    exec2->wait();
+    emission1 = sg_host_get_emission(host1);
+    double emission2 = sg_host_get_emission(host2);
+    XBT_INFO(
+        "Computation done (duration: %.2f s). Host1 peak speed=%.0E flop/s; Host1 CO2 Emission =%.0f g, Host2 peak speed=%.0E flop/s; Host2 CO2 Emission =%.0f g",
+        sg4::Engine::get_clock() - start, host1->get_speed(), emission1, host2->get_speed(), emission2);
+  
+    host2->turn_off();  
+    
     //Executer N tache(N = nb Coeur)
-    //A faire
+    start = sg4::Engine::get_clock();
+    int n = host1->get_core_count();    
+    XBT_INFO("Run a computation of %.0E flops on each core of host1", flopAmount1);
+    sg4::this_actor::thread_execute(host1,flopAmount1, n);
+    double newEmission = sg_host_get_emission(host1) - emission1;
+    XBT_INFO(
+        "Computation on each cores done (duration: %.2f s). Host1 CO2 Emission =%.0f g",
+        sg4::Engine::get_clock() - start, newEmission);
 
     //Test IDLE
-    //A faire
+    /*
+    start = sg4::Engine::get_clock();
+    emission1 = sg_host_get_emission(host1);
+    XBT_INFO("IDLE for 10 seconds");
+    
+    sg4::this_actor::sleep_for(10);
+    
+    double emission3 = sg_host_get_emission(host1) - emission1;
+    XBT_INFO("Done sleeping (duration: %.2f s); CO2 emission = %.2f g",
+             sg4::Engine::get_clock() - start , emission3);*/
 }
+
 
 int main (int argc, char *argv[]) {
     sg_host_emission_plugin_init();
