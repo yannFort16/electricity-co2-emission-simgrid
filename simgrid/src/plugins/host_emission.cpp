@@ -116,11 +116,11 @@ HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr)
       //Todo when ussig <prop> in order get the emission by country
       const char* emission_file = host_->get_property("emission_file");
 
-      std::string full_path = std::string("../ressources/") + emission_file;
+      //std::string full_path = std::string("../ressources/") + emission_file;
 
-      std::filesystem::path p = full_path;
+      std::filesystem::path p = emission_file;
 
-      std::filesystem::path t = std::filesystem::current_path() / full_path;
+      std::filesystem::path t = std::filesystem::current_path() / emission_file;
       int v = read_emission_file(p);
       if (v != -1) {
           emission_value = v;

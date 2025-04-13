@@ -9,7 +9,7 @@ namespace sg4 = simgrid::s4u;
 void test_execution() {
     sg4::Host* host1 = sg4::Host::by_name("MyHost1");
 
-    sg_host_setCO2(host1, 12);
+    //sg_host_setCO2(host1, 12);
 
     sg4::Host* host2 = sg4::Host::by_name("MyHost2");
     sg4::Host* host3 = sg4::Host::by_name("MyHost3");
@@ -20,6 +20,16 @@ void test_execution() {
         XBT_ERROR("Hosts not found");
         return;
     }
+
+
+    double c02_h1 = sg_host_get_CO2(host1);
+    std::string country_h1 = sg_host_get_country(host1);
+    XBT_INFO("Host1 CO2 emission: %.2f gCO2/kWh, Country: %s", c02_h1, country_h1.c_str());
+
+
+    double c02_h2 = sg_host_get_CO2(host2);
+    std::string country_h2 = sg_host_get_country(host2);
+    XBT_INFO("Host1 CO2 emission: %.2f gCO2/kWh, Country: %s", c02_h2, country_h2.c_str());
 
     
     double start = sg4::Engine::get_clock();
