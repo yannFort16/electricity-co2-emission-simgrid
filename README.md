@@ -1,5 +1,31 @@
 # electricity-co2-emission-simgrid
 
+### Comment utiliser le plugin
+
+Pour pouvoir utiliser notre plugin, vous devez récupérer tous les fichiers qui sont dans la directory Simgrid. Ces fichiers doivent être ensuite déposés dans l'installation Simgrid sur votre ordinateur. (Le fichier simgrid dans votre ordinateur devrait avoir les fichiers : contrib, doc, docs, exemples, …). Certains fichiers seront écrasés lors de l'installation du plugin. Une fois que tous les fichiers correctement ajoutés, vous pouvez utiliser les commandes suivantes pour compiler le plugin.
+```
+mkdir build
+cd build
+cmake ..
+make
+(sudo) make install
+```
+Maintenant que le plugin est compilé et installé, vous pouvez commencer à l'utiliser pour vos simulations. Vous pouvez aussi exécuter la suite de tests proposée dans le cadre du plugin. Pour faire ça, exécutez les commandes suivantes, toujours à l'intérieur de la build directory.
+```
+make tests
+ctest -R s4u-emission-exec
+```
+Si vous souhaitez voir l'exécution de ces mêmes tests dans votre terminal, vous pouvez. À l'intérieur du fichier Simgrid se trouve un fichier Sujet_19-1. Dans ce fichier se trouve le fichier s4u-emission-exec1. Ouvrez un terminal dans ce fichier et exécutez les commandes suivantes.
+```
+mkdir build
+cd build
+cmake ..
+make
+./s4u-emission-exec1 ../src/emission_paltform.xml
+```
+Vous pouvez modifier les fichiers dans les fichiers du dossier src à l'intérieur de la directory Sujet_19-1 pour pouvoir créer vos propres simulations. <br><br>
+Le plugin a besoin d'une valeur de g de CO2/kWh pour pouvoir calculer les émissions d'un système. Cette valeur est 42 g de CO2/kWh par défaut. Elle peut être changée avec la fonction ```sg_host_setCO2(hostName, Value);```. Elle peut aussi être définie lors de l'initialisation du plugin. Dans le fichier XML de votre simulation, vous pouvez ajouter la propriété ```<prop id="emission_file" value="../directory/dataFile.csv" />```.  Pour télécharger les fichiers utilisés par notre plugin, allez sur le site [electicitymaps.com](https://portal.electricitymaps.com/datasets).
+
 ### Rendu du 3/03/2025
 
 <p> Host_load est un plugin de l’outils SimGrid qui permet d’analyser la charge de travail d’un Host (ou le load de l’Host) dans le cadre d’une simulation. Il traque la façon dont les ressources sont utilisées. Il permet d’identifier quand des ressources sont sur ou sous utilisées. Donc il permet d’optimiser l’allocation des ressources. Il utilise les données de l’host qui sont fournies dans un fichier XML. Ensuite il utilise ces données dans une simulation qui à pour but de traquer l’utilisation des ressources. Il renvoie les résultats de la simulation de façon qu’ils soient interprétés. A la fin, il termine (kill) automatiquement les tâches de chaque host. Le plugin Host_energy est en partie basé sur le plugin Host_load.
