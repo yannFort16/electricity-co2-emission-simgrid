@@ -18,6 +18,8 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include <list>
+#include <ctime>
 
 SIMGRID_REGISTER_PLUGIN(host_emission, "Cpu CO2 emisson besed on energy consumption.", &sg_host_emission_plugin_init)
 
@@ -33,9 +35,14 @@ class HostEmissions {
 
     double emission_value = 42.0; // g CO2/kWh in France on the 11/03/2025 used as default value
     double total_emissions_  = 0.0;
+    std::list<double> total_emissions_list_ = {}; 
     double last_updated_  = simgrid::s4u::Engine::get_clock(); /*< Timestamp of the last energy update event*/
-    std::string country = "No data";  
+    time_t last_update_time_ = time(nullptr); // Last update time in seconds since epoch
+    std::string country = "No data";
+    int type_of_csv =-1; // -1: No CSV, 0: Monthly, 1: Daily, 2: Hourly  
+    std::list<double> list_emission_value = {}; // List of emission values
     bool host_was_used_ = false; // Tracks whether the host was used
+    std::list<std::string> date_utc_list = {}; // List of dates in UTC format
 
     friend void ::on_simulation_end(); // For access to host_was_used_
     double JouleToWattH(double energy) { return energy / 3600.0; }
@@ -52,45 +59,128 @@ public:
     std::string getCountry(){return country;};
 private :
     double read_emission_file(std::filesystem::path emission_file);
+    int set_emission_file_type(std::string emission_file);
+    std::list<double> fill_emission_list(double last_value);
+    void print_emission_list(std::list<double> list_double);
+    void export_emission_list();
+    int get_index_time();
 };
 
 simgrid::xbt::Extension<simgrid::s4u::Host, HostEmissions> HostEmissions::EXTENSION_ID;
 
+void HostEmissions::print_emission_list(std::list<double> list_double){
+  std::cout << "Emission list: ";
+  for (const auto& value : list_double) {
+      std::cout << value << " ";
+  }
+  std::cout << std::endl;
+}
 
 double HostEmissions::read_emission_file(std::filesystem::path emission_file){
   //TODO: Read the emission file and set the emission_value variable
   
   double newEmissionValue = -1.0;
   std::ifstream file(emission_file);
-    if (!file.is_open()) {
-      XBT_INFO("Could not open CSV file %s/%s", std::filesystem::current_path().string().c_str(), emission_file.string().c_str());
-      return newEmissionValue;
+  if (!file.is_open()) {
+    XBT_INFO("Could not open CSV file %s/%s", std::filesystem::current_path().string().c_str(), emission_file.string().c_str());
+    return newEmissionValue;
 
-    }
+  }
+    
+  std::string line;
+  //std::vector<EmissionData> emissions;
+  std::getline(file, line); // Skip header line
+  //std::getline(file, line); // Read the first data line
 
-    std::string line;
-    //std::vector<EmissionData> emissions;
-    std::getline(file, line); // Skip header line
-    std::getline(file, line); // Read the first data line
-    std::stringstream ss(line);
-    std::string token;
+  while (std::getline(file, line)) {
+      std::stringstream ss(line);
+      std::string token;
 
-    std::getline(ss, token, ','); // Skip datetime
-    std::getline(ss, token, ','); // Get country
-    country = std::string(token);
-    std::getline(ss, token, ','); // Skip ZoneName
-    std::getline(ss, token, ','); // Skip ZoneId
-    std::getline(ss, token, ','); // Get gCO2/kWh
-    try {
-      token.erase(0, token.find_first_not_of(" \t\n\r")); // Trim leading whitespace
-      token.erase(token.find_last_not_of(" \t\n\r") + 1); // Trim trailing whitespace
-      newEmissionValue = std::stod(token);
-    } catch (const std::invalid_argument& e) {
-      XBT_INFO("Invalid emission value in CSV file: '%s'", token.c_str());
-      return newEmissionValue;
-    }
+      std::getline(ss, token, ','); // Skip datetime
+      date_utc_list.push_back(token);
+      std::getline(ss, token, ','); // Get country
+      country = std::string(token);
+      std::getline(ss, token, ','); // Skip ZoneName
+      std::getline(ss, token, ','); // Skip ZoneId
+      std::getline(ss, token, ','); // Get gCO2/kWh
+      try {
+        token.erase(0, token.find_first_not_of(" \t\n\r")); // Trim leading whitespace
+        token.erase(token.find_last_not_of(" \t\n\r") + 1); // Trim trailing whitespace
+        newEmissionValue = std::stod(token);
+      } catch (const std::invalid_argument& e) {
+        XBT_INFO("Invalid emission value in CSV file: '%s'", token.c_str());
+        return newEmissionValue;
+      }
+      list_emission_value.push_back(newEmissionValue);
+      // Read until the end of the line
+      while (std::getline(ss, token, '\n')) {
+        // Skip all remaining columns
+      }
+  }
 
+  list_emission_value = fill_emission_list(newEmissionValue);
+  file.close();
   return newEmissionValue;
+}
+
+std::list<double> HostEmissions::fill_emission_list(double last_value){
+  std::list<double> new_list_emission_value = {};
+  int size = list_emission_value.size();
+  if (size != 0) {
+    new_list_emission_value = list_emission_value;
+  }
+  if(type_of_csv == 0){
+    // Monthly
+    for (int i = size; i < 12; ++i) {
+      new_list_emission_value.push_back(last_value);
+    }
+  } else if(type_of_csv == 1){
+    // Daily
+    for (int i = size; i < 366; ++i) {
+      new_list_emission_value.push_back(last_value);
+    }
+  } else if(type_of_csv == 2){
+    // Hourly
+    for (int i = size; i < 24; ++i) {
+      new_list_emission_value.push_back(last_value);
+    }
+  }
+  return new_list_emission_value;
+}
+
+//TODO : Hide prints
+int HostEmissions::set_emission_file_type(std::string emission_file){
+  if (emission_file.find("monthly") != std::string::npos){
+    type_of_csv = 0;
+    XBT_INFO("CSV file Monthly: '%s'", emission_file.c_str());
+  }else if (emission_file.find("daily") != std::string::npos){
+    type_of_csv = 1;
+    XBT_INFO("CSV file Daily: '%s'", emission_file.c_str());
+  }else if (emission_file.find("hourly") != std::string::npos){
+    type_of_csv = 2;
+    XBT_INFO("CSV file Hourly: '%s'", emission_file.c_str());
+  }
+  return 0;
+}
+
+void HostEmissions::export_emission_list(){
+  //TODO: Export the emission list to a CSV file
+  print_emission_list(total_emissions_list_);
+}
+
+int HostEmissions::get_index_time(){
+  struct tm date_time = *localtime(&last_update_time_);
+  if (type_of_csv == 0){
+    // Monthly
+    return date_time.tm_mon;
+  } else if (type_of_csv == 1){
+    // Daily
+    return date_time.tm_yday;
+  } else if (type_of_csv == 2){
+    // Hourly
+    return date_time.tm_hour;
+  }
+  return -1; // Invalid type
 }
 
 void HostEmissions::update() {
@@ -106,8 +196,23 @@ void HostEmissions::update() {
         
     XBT_DEBUG("[update_emission of %s] period=[%.8f-%.8f]; total emission before: %.8f gCO2 -> added now: %.8f gCO2",
       host_->get_cname(), start_time, finish_time, previous_emissions, emissions_this_step);
-  }
-        
+    host_was_used_ = true; // Mark the host as used
+
+    // Update the emission list
+    if (type_of_csv != -1){
+      time(&last_update_time_);
+      int index = get_index_time();
+      if (index != -1){
+        if (list_emission_value.size() < index){
+          XBT_ERROR("Emission list size: %zu, index: %d", list_emission_value.size(), index);
+        }else{
+          double last_val = *next(total_emissions_list_.begin(), index);
+          *next(total_emissions_list_.begin(), index) = emissions_this_step + last_val;
+        }
+      }
+    }
+    }
+
 }
 
 
@@ -121,9 +226,12 @@ HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr)
       std::filesystem::path p = emission_file;
 
       std::filesystem::path t = std::filesystem::current_path() / emission_file;
+      int type = set_emission_file_type(emission_file);
+      total_emissions_list_ = fill_emission_list(0.0);
       int v = read_emission_file(p);
       if (v != -1) {
           emission_value = v;
+          //print_emission_list(list_emission_value);
       } else {
           XBT_INFO("Emission file not found or invalid %s, using default value: %f gCO2/kWh", t.string().c_str(), emission_value);
       }
@@ -206,10 +314,14 @@ static void on_simulation_end()
       total_emission += emission;
       if (host->extension<HostEmissions>()->host_was_used_)
         used_hosts_emission += emission;
+      // Export the emission list to a CSV file
+      host->extension<HostEmissions>()->export_emission_list();
     }
   }
   XBT_INFO("Total CO2 emission: %f g (used hosts: %f g; unused/idle hosts: %f g)",
      total_emission, used_hosts_emission, total_emission- used_hosts_emission);
+  
+ 
 }
 
 static void on_activity_suspend_resume(simgrid::s4u::Activity const& activity)

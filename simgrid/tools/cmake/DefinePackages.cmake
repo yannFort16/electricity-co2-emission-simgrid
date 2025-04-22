@@ -1127,6 +1127,7 @@ set(PLATFORMS_EXAMPLES
   examples/platforms/energy_boot.xml
   examples/platforms/energy_cluster.xml
   examples/platforms/energy_platform.xml
+  examples/platforms/emission_platform.xml
   examples/platforms/faulty_host.xml
   examples/platforms/g5k.xml
   examples/platforms/griffon.cpp
