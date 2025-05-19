@@ -45,14 +45,23 @@ void test_execution() {
     
     //Executer une tache
     start = sg4::Engine::get_clock();
-    double flopAmount = 100E7;
+    double flopAmount = 4E12;
     XBT_INFO("Run a computation of %.0E flops", flopAmount);
     
     sg4::this_actor::execute(flopAmount);
     
-    XBT_INFO(
-      "Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission =%.0f g",
-      sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emission1);
+    XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission =%.0f g",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emission1);
+
+    XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    
+    sg4::this_actor::execute(flopAmount*2);
+      
+    XBT_INFO( "Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission =%.0f g",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emission1);
+  
+      
+    sg_host_export_emission_list(host1);
 
     //Executer 2 tache
     host2->turn_on();
@@ -96,6 +105,30 @@ void test_execution() {
     double emission3 = sg_host_get_emission(host1) - emission1;
     XBT_INFO("Done sleeping (duration: %.2f s); CO2 emission = %.2f g",
              sg4::Engine::get_clock() - start , emission3);*/
+
+    //Exec qui dure moins d’une heure
+    //TODO
+    //Exec qui dure plus d’une heure
+//TODO
+    //Exec qui dure plus d’un jour
+//TODO
+    //Exec qui dure plus d’un mois
+//TODO
+    //Annuler une exec et vérifier si le calcul est bon
+}
+
+void testsPt3(){
+    //Exec qui dure moins d’une heure
+        //TODO
+    //Exec qui dure plus d’une heure
+        //TODO
+    //Exec qui dure plus d’un jour
+        //TODO
+    //Exec qui dure plus d’un mois
+        //TODO
+    //Annuler une exec et vérifier si le calcul est bon
+        //TODO
+
 }
 
 
