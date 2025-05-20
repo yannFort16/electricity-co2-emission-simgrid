@@ -4,6 +4,7 @@
 CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o
  /home/yann/newSimGrid/simgrid/Sujet_19-1/s4u-emission-exec1/src/s4u-emission-exec1.cpp
  /home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h
+ /home/yann/newSimGrid/simgrid/include/simgrid/plugins/energy.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

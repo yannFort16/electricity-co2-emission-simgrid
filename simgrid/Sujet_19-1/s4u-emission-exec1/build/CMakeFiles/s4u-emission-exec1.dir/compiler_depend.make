@@ -3,6 +3,7 @@
 
 CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSimGrid/simgrid/Sujet_19-1/s4u-emission-exec1/src/s4u-emission-exec1.cpp \
   /home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h \
+  /home/yann/newSimGrid/simgrid/include/simgrid/plugins/energy.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -1274,10 +1275,6 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/mpl/aux_/find_if_pred.hpp:
 
-/usr/include/boost/mpl/has_key_fwd.hpp:
-
-/usr/include/boost/preprocessor/punctuation/comma_if.hpp:
-
 /usr/include/boost/preprocessor/logical/limits/bool_256.hpp:
 
 /usr/include/boost/mpl/aux_/config/ttp.hpp:
@@ -1460,6 +1457,14 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/mp11/detail/mp_defer.hpp:
 
+/usr/include/c++/13/bits/shared_ptr_base.h:
+
+/usr/include/boost/mp11/detail/mp_count.hpp:
+
+/usr/include/boost/intrusive/detail/std_fwd.hpp:
+
+/usr/include/boost/mpl/logical.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
 /usr/include/c++/13/tuple:
@@ -1536,39 +1541,21 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/mpl/bool.hpp:
 
+/home/yann/newSimGrid/simgrid/include/simgrid/plugins/energy.h:
+
 /usr/include/boost/type_traits/type_identity.hpp:
 
-/usr/include/x86_64-linux-gnu/bits/endianness.h:
+/usr/include/c++/13/ext/atomicity.h:
 
-/usr/include/boost/mpl/bool_fwd.hpp:
+/usr/include/boost/mp11/detail/mp_remove_if.hpp:
 
-/home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h:
+/usr/include/boost/mpl/distance_fwd.hpp:
 
-/usr/include/boost/concept/detail/general.hpp:
-
-/usr/include/boost/parameter/required.hpp:
-
-/usr/include/boost/parameter/aux_/template_keyword.hpp:
-
-/usr/include/boost/config/detail/suffix.hpp:
-
-/usr/include/boost/type_traits/is_integral.hpp:
-
-/usr/include/boost/mpl/aux_/preprocessed/gcc/bind.hpp:
-
-/usr/include/boost/mpl/deref.hpp:
-
-/usr/include/c++/13/bits/deque.tcc:
-
-/usr/include/boost/intrusive/detail/algorithm.hpp:
-
-/usr/include/boost/type_traits/declval.hpp:
+/usr/include/boost/intrusive/detail/exception_disposer.hpp:
 
 /usr/include/boost/intrusive/circular_list_algorithms.hpp:
 
 /usr/include/boost/parameter/aux_/default.hpp:
-
-/usr/include/boost/config/no_tr1/functional.hpp:
 
 /usr/include/boost/config.hpp:
 
@@ -1612,6 +1599,10 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/move/detail/pointer_element.hpp:
 
+/usr/include/boost/config/detail/suffix.hpp:
+
+/usr/include/boost/type_traits/is_integral.hpp:
+
 /usr/include/time.h:
 
 /usr/include/boost/intrusive/detail/simple_disposers.hpp:
@@ -1632,11 +1623,45 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/mpl/placeholders.hpp:
 
+/usr/include/boost/detail/indirect_traits.hpp:
+
+/usr/include/x86_64-linux-gnu/bits/endianness.h:
+
+/usr/include/boost/mpl/bool_fwd.hpp:
+
+/home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h:
+
+/usr/include/boost/concept/detail/general.hpp:
+
+/usr/include/boost/parameter/required.hpp:
+
+/usr/include/boost/parameter/aux_/template_keyword.hpp:
+
+/usr/include/boost/mpl/aux_/preprocessed/gcc/bind.hpp:
+
+/usr/include/boost/mpl/deref.hpp:
+
+/usr/include/c++/13/bits/deque.tcc:
+
+/usr/include/boost/intrusive/detail/algorithm.hpp:
+
+/usr/include/boost/type_traits/declval.hpp:
+
+/usr/include/boost/config/no_tr1/functional.hpp:
+
 /usr/include/boost/move/detail/force_ptr.hpp:
 
 /usr/include/boost/iterator/detail/facade_iterator_category.hpp:
 
-/usr/include/boost/detail/indirect_traits.hpp:
+/usr/include/boost/concept/detail/backward_compatibility.hpp:
+
+/usr/include/c++/13/algorithm:
+
+/usr/include/boost/type.hpp:
+
+/usr/include/boost/config/stdlib/libstdcpp3.hpp:
+
+/home/yann/newSimGrid/simgrid/Sujet_19-1/s4u-emission-exec1/src/s4u-emission-exec1.cpp:
 
 /usr/include/boost/preprocessor/variadic/limits/size_64.hpp:
 
@@ -1676,14 +1701,6 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/mp11/detail/config.hpp:
 
-/usr/include/c++/13/bits/shared_ptr_base.h:
-
-/usr/include/boost/mp11/detail/mp_count.hpp:
-
-/usr/include/boost/intrusive/detail/std_fwd.hpp:
-
-/usr/include/boost/mpl/logical.hpp:
-
 /usr/include/boost/config/helper_macros.hpp:
 
 /usr/include/boost/mpl/aux_/config/eti.hpp:
@@ -1706,27 +1723,9 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/intrusive/detail/value_functors.hpp:
 
-/usr/include/boost/concept/detail/backward_compatibility.hpp:
-
-/usr/include/c++/13/algorithm:
-
-/usr/include/boost/type.hpp:
-
-/usr/include/c++/13/ext/atomicity.h:
-
-/usr/include/boost/mp11/detail/mp_remove_if.hpp:
-
-/usr/include/boost/mpl/distance_fwd.hpp:
-
-/home/yann/newSimGrid/simgrid/Sujet_19-1/s4u-emission-exec1/src/s4u-emission-exec1.cpp:
-
-/usr/include/boost/config/stdlib/libstdcpp3.hpp:
-
-/usr/include/boost/intrusive/detail/exception_disposer.hpp:
+/usr/include/boost/type_traits/is_void.hpp:
 
 /usr/include/c++/13/bits/align.h:
-
-/usr/include/boost/type_traits/is_void.hpp:
 
 /usr/include/c++/13/cstdlib:
 
@@ -1927,6 +1926,10 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 /usr/include/boost/mpl/aux_/config/dtp.hpp:
 
 /usr/include/boost/preprocessor/seq/size.hpp:
+
+/usr/include/boost/mpl/has_key_fwd.hpp:
+
+/usr/include/boost/preprocessor/punctuation/comma_if.hpp:
 
 /usr/include/boost/mpl/aux_/template_arity.hpp:
 
@@ -2402,9 +2405,9 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: /home/yann/newSi
 
 /usr/include/boost/type_traits/detail/yes_no_type.hpp:
 
-/usr/include/boost/config/compiler/gcc.hpp:
-
 /usr/include/boost/iterator/interoperable.hpp:
+
+/usr/include/boost/config/compiler/gcc.hpp:
 
 /usr/include/boost/type_traits/enable_if.hpp:
 

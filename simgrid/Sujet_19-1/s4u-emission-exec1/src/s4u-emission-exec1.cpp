@@ -2,6 +2,7 @@
 
 //Change this to include your full directroy path to emission .h file   
 #include "/home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h"
+#include "/home/yann/newSimGrid/simgrid/include/simgrid/plugins/energy.h"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "Messages specific for this s4u example");
 namespace sg4 = simgrid::s4u;
@@ -29,7 +30,7 @@ void test_execution() {
     std::string country_h2 = sg_host_get_country(host2);
     XBT_INFO("Host1 CO2 emission: %.2f gCO2/kWh, Country: %s", c02_h2, country_h2.c_str());
 
-    
+    //Test IDLE    
     double start = sg4::Engine::get_clock();
     XBT_INFO("Sleep for 10 seconds");
     sg4::this_actor::sleep_for(10);
@@ -94,38 +95,66 @@ void test_execution() {
         "Computation on each cores done (duration: %.2f s). Host1 CO2 Emission =%.0f g",
         sg4::Engine::get_clock() - start, newEmission);
 
-    //Test IDLE
-    /*
-    start = sg4::Engine::get_clock();
-    emission1 = sg_host_get_emission(host1);
-    XBT_INFO("IDLE for 10 seconds");
-    
-    sg4::this_actor::sleep_for(10);
-    
-    double emission3 = sg_host_get_emission(host1) - emission1;
-    XBT_INFO("Done sleeping (duration: %.2f s); CO2 emission = %.2f g",
-             sg4::Engine::get_clock() - start , emission3);*/
-
-    //Exec qui dure moins d’une heure
-    //TODO
-    //Exec qui dure plus d’une heure
-//TODO
-    //Exec qui dure plus d’un jour
-//TODO
-    //Exec qui dure plus d’un mois
-//TODO
-    //Annuler une exec et vérifier si le calcul est bon
 }
 
-void testsPt3(){
+void testsPt3(){//PB avec les années
+    sg4::Host* host1 = sg4::Host::by_name("MyHost1");
+    sg4::Host* host2 = sg4::Host::by_name("MyHost2");
+    sg4::Host* host3 = sg4::Host::by_name("MyHost3");
+    //sg4::Host* host4 = sg4::Host::by_name("MyHost4");
+
+    //Sleep for an hour
+    XBT_INFO("Sleep for 1 hour");
+    sg4::this_actor::sleep_for(3600);
+
+    //host1->turn_on();
+    host2->turn_off();
+    host3->turn_off();
+    //host4->turn_off();
+
     //Exec qui dure moins d’une heure
-        //TODO
+    double start = sg4::Engine::get_clock();
+    double emissionBefore = sg_host_get_emission(host1);
+    double consoBefore = sg_host_get_consumed_energy(host1);
+    double flopAmount = 4E9;
+    XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    
+    sg4::this_actor::execute(flopAmount);
+    
+    XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; \n\tCO2 Emission = %lf g; Energy consumption = %.0f J",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emissionBefore, 
+        sg_host_get_consumed_energy(host1) - consoBefore);
+
     //Exec qui dure plus d’une heure
-        //TODO
+    start = sg4::Engine::get_clock();
+    emissionBefore = sg_host_get_emission(host1);
+    consoBefore = sg_host_get_consumed_energy(host1);
+    flopAmount = 36E10;
+    XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    sg4::this_actor::execute(flopAmount);
+    XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; \n\tCO2 Emission = %lf g; Energy consumption = %.0f J",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emissionBefore,
+        sg_host_get_consumed_energy(host1) - consoBefore);
     //Exec qui dure plus d’un jour
-        //TODO
+    start = sg4::Engine::get_clock();
+    emissionBefore = sg_host_get_emission(host1);
+    consoBefore = sg_host_get_consumed_energy(host1);
+    flopAmount = flopAmount*24;
+    XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    sg4::this_actor::execute(flopAmount);
+    XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; \n\tCO2 Emission = %lf g; Energy consumption = %.0f J",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emissionBefore,
+        sg_host_get_consumed_energy(host1) - consoBefore);
     //Exec qui dure plus d’un mois
-        //TODO
+    start = sg4::Engine::get_clock();
+    emissionBefore = sg_host_get_emission(host1);
+    consoBefore = sg_host_get_consumed_energy(host1);
+    flopAmount = flopAmount*31;
+    XBT_INFO("Run a computation of %.0E flops", flopAmount);
+    sg4::this_actor::execute(flopAmount);
+    XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; \n\tCO2 Emission = %lf g; Energy consumption = %.0f J",
+        sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emissionBefore, 
+        sg_host_get_consumed_energy(host1) - consoBefore);
     //Annuler une exec et vérifier si le calcul est bon
         //TODO
 
@@ -140,8 +169,8 @@ int main (int argc, char *argv[]) {
 
     e.load_platform(argv[1]);
   
-    e.add_actor("emission test", e.host_by_name("MyHost1"), test_execution);
-    
+    //e.add_actor("Emission Test 1", e.host_by_name("MyHost1"), test_execution);
+    e.add_actor("Emission Test 2", e.host_by_name("MyHost1"), testsPt3);
     XBT_INFO("End of simulation.");
     e.run();
     return 0;

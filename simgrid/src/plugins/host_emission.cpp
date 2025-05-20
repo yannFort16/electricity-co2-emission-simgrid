@@ -70,7 +70,7 @@ private :
     //std::list<double> HostEmissions::init_emission_export_list();
     void print_emission_list(std::list<double> list_double);
     int get_index_time(double time);
-    void add_emission_to_list(double emission, int strat_index, int end_index);
+    void add_emission_to_list(double emission, double start_time, double current_time);
     void add_emission_list_to_export();
     std::string get_CSV_Type();
 };
@@ -330,75 +330,59 @@ void HostEmissions::add_emission_list_to_export(){
   emission_export_list.push_back(current_list);
   //std::cout << "Emission list is full!!!!!!!\n" << std::endl;
   //print_emission_list(total_emissions_list_);
-  XBT_INFO("Total Emission list is full. It will be added to the result CSV file at the end");
+  //XBT_INFO("Total Emission list is full. It will be added to the result CSV file at the end");
   //Clear the total emissions list
+  total_emissions_list_.clear();
   total_emissions_list_ = fill_emission_list(0.0, type_of_csv);
 }
 
-void HostEmissions::add_emission_to_list(double conso_this_step, int start_index, int end_index){
-    if (start_index != -1 && end_index != -1) {
-        if (static_cast<size_t>(end_index) >= total_emissions_list_.size() || static_cast<size_t>(start_index) >= total_emissions_list_.size()) {
-            XBT_ERROR("Emission list size: %zu, start_index: %d", total_emissions_list_.size(), end_index);
-        } else if (start_index == end_index) {
-            // If the start and end index are the same, just add the emissions to that index
-            auto it = total_emissions_list_.begin();
-            std::advance(it, start_index);
-            auto emission_it = list_emission_value.begin();
-            std::advance(emission_it, start_index);
+void HostEmissions::add_emission_to_list(double conso_this_step, double start_time, double current_time) {
+    int N = static_cast<int>(total_emissions_list_.size());
+    
+    if (N == 0 || start_time >= current_time)
+        return;
+    // Total duration
+    double total_duration = current_time - start_time;
+    if (total_duration < 0)
+        return;
+    //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
+    // For each bin, compute its time window and overlap with [start_time, current_time]
+    double nb_lists  = 0;
+    if (type_of_csv == 0) nb_lists = total_duration / (30 * 86400 * 24); // Monthly
+    else if (type_of_csv == 1) nb_lists = total_duration / (86400 * 24); // Daily
+    else if (type_of_csv == 2) nb_lists = total_duration / (3600 * 24); // Hourly
+    else if (type_of_csv == 3) nb_lists = total_duration / (365 * 86400 * 24); // Yearly
+    else return;
+    int nb_lists_int = std::floor(nb_lists);
+    std::cout << "Nb de list:" <<nb_lists_int << std::endl;
 
-            *it += conso_this_step * (*emission_it);
-        } else if (start_index < end_index) {
-            // If the start index is less than the end index, add emissions to all indices in between
-            double conso_per_step = conso_this_step / (end_index - start_index + 1);
-            auto it = total_emissions_list_.begin();
-            std::advance(it, start_index);
+    double conso_per_step = conso_this_step / (current_time - start_time + 1);
+    int start_index = get_index_time(start_time);
+    int end_index = get_index_time(current_time);
+    for(int j=0; j<nb_lists_int; ++j){
+      auto it = total_emissions_list_.begin();
+      std::advance(it, start_index);
 
-            auto emission_it = list_emission_value.begin();
-            std::advance(emission_it, start_index);
-
-            for (int i = start_index; i <= end_index; ++i) {
-                //Important for the presentation
-                //std::cout << "Conso this step: " << conso_per_step << "kWh\t Emission: " << (*emission_it) << "gCO2/kWh" << std::endl;
-                *it += conso_per_step * (*emission_it);
-                ++it;
-                ++emission_it;
-            }
-        } else {
-            // If the start index is greater than the end index, add emissions to all indices until the end of the list
-            // then add the content of the list to the export list and clear the list and add the rest of the emissions to the first index
-            double conso_per_step = conso_this_step / (total_emissions_list_.size() - start_index + end_index + 1);
-            
-            auto it = total_emissions_list_.begin();
-            std::advance(it, start_index);
-            auto emission_it = list_emission_value.begin();
-            std::advance(emission_it, start_index);
-
-            for (int i = start_index; i < total_emissions_list_.size(); ++i) {
-                //Important for the presentation
-                //std::cout << "Conso this step: " << conso_per_step << "kWh\t Emission: " << (*emission_it) << "gCO2/kWh" << std::endl;
-                
-                *it += conso_per_step * (*emission_it);
-                ++it;
-                ++emission_it;
-            } 
-
-            add_emission_list_to_export();
-            it = total_emissions_list_.begin();
-            std::advance(it, 0);
-            emission_it = list_emission_value.begin();
-            std::advance(emission_it, 0);
-
-            // Add the rest of the emissions to the first index
-            for (int i = 0; i <= end_index; ++i) {
-                //Important for the presentation
-                //std::cout << "Conso this step: " << conso_per_step << "kWh\t Emission: " << (*emission_it) << "gCO2/kWh" << std::endl;
-
-                *it += conso_per_step * (*emission_it);
-                ++it;
-                ++emission_it;
-            }
-        }
+      auto emission_it = list_emission_value.begin();
+      std::advance(emission_it, start_index);
+      for (int i = 0; i < N; ++i) {
+        *it += conso_per_step * (*emission_it);
+        ++it;
+        ++emission_it;
       }
+      start_index = 0;
+      add_emission_list_to_export();
+    }
+    auto it = total_emissions_list_.begin();
+    std::advance(it, start_index);
+
+    auto emission_it = list_emission_value.begin();
+    std::advance(emission_it, start_index);
+    for (int i = 0; i <= end_index; ++i) {
+      *it += conso_per_step * (*emission_it);
+      ++it;
+      ++emission_it;
+    }
 }
 
 
@@ -423,10 +407,7 @@ void HostEmissions::update() {
     // Update the emission list
     if (type_of_csv != -1) {
       double current_time = simgrid::s4u::Engine::get_clock(); // Get simulation time
-      int end_index = get_index_time(current_time);
-      int start_index = get_index_time(start_time);
-      //std::cout << "Start Index: " << start_index << "\t End Index: " << end_index << std::endl;
-      add_emission_to_list(energy_this_step, start_index, end_index);
+      add_emission_to_list(energy_this_step, start_time, current_time);
     }
     }
 

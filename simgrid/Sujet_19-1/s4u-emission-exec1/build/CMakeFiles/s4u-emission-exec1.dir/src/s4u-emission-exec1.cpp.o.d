@@ -735,4 +735,5 @@ CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o: \
  /usr/local/include/simgrid/s4u/VirtualMachine.hpp \
  /usr/local/include/simgrid/s4u/ActivitySet.hpp \
  /usr/local/include/simgrid/s4u/Task.hpp \
- /home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h
+ /home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h \
+ /home/yann/newSimGrid/simgrid/include/simgrid/plugins/energy.h
