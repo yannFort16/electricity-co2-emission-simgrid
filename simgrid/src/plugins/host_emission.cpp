@@ -21,7 +21,7 @@
 #include <list>
 #include <ctime>
 
-SIMGRID_REGISTER_PLUGIN(host_emission, "Cpu CO2 emisson besed on energy consumption.", &sg_host_emission_plugin_init)
+SIMGRID_REGISTER_PLUGIN(host_emission, "Cpu CO2 emisson based on energy consumption.", &sg_host_emission_plugin_init)
 
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(host_emission, kernel, "Logging specific to the host emission plugin");
 
@@ -92,16 +92,14 @@ double HostEmissions::read_emission_file(std::filesystem::path emission_file){
   if (!file.is_open()) {
     XBT_INFO("Could not open CSV file %s/%s", std::filesystem::current_path().string().c_str(), emission_file.string().c_str());
     return newEmissionValue;
-
   }
-    
+
   std::string line;
   std::getline(file, line); // Skip header line
 
   while (std::getline(file, line)) {
       std::stringstream ss(line);
       std::string token;
-
       std::getline(ss, token, ','); // Skip datetime
       date_utc_list.push_back(token);
       std::getline(ss, token, ','); // Get country
@@ -136,7 +134,7 @@ std::list<double> HostEmissions::fill_emission_list(double last_value, int type_
     else if (type_of_csv == 3) target_size = 1;
     else return new_list;
 
-    for (int i = 0; i < target_size; ++i) {
+    for (int i = 0; i < target_size; i++) {
         new_list.push_back(last_value);
     }
     return new_list;
@@ -178,7 +176,9 @@ void HostEmissions::export_emission_list(){
   
   // Export the emission_export_list to a CSV file
   std::string export_type_str = get_CSV_Type();
-  std::string filename = "emission_export_list_" + host_->get_name() + ".csv";
+  std::string folder = "../ressources/exports";
+  std::filesystem::create_directories(folder); // Ensure the folder exists
+  std::string filename = folder + "/emission_" + host_->get_name() + "_" + this->country + ".csv";
   std::ofstream outfile(filename);
   if (!outfile.is_open()) {
     XBT_ERROR("Could not open file %s for writing emission export list.", filename.c_str());
@@ -192,23 +192,11 @@ void HostEmissions::export_emission_list(){
     auto it_nested = list_emission_values.begin();
     std::advance(it_nested, 0);
     for (int j = 0; j < list_emission_values.size(); ++j) {
-      outfile << i << "," << j+1 << export_type_str << "," << (*it_nested) << "\n"; //TODO :  day, month, year
+      outfile << i << "," << j+1 << export_type_str << "," << (*it_nested) << "\n";
       ++it_nested;
     }
     ++it;
   }
-
-  /*
-  int export_idx = 0;
-
-  for (const auto& emission_list : emission_export_list) {
-    int idx = 0;
-    for (const auto& emission : emission_list) {
-      outfile << export_idx << "," << idx << "," << emission << "\n";
-      ++idx;
-    }
-    ++export_idx;
-  }*/
   outfile.close();
   XBT_INFO("Emission export list exported to %s", filename.c_str());
 }
@@ -226,7 +214,7 @@ int HostEmissions::get_index_time(double current_time){
     return date_time.tm_yday;
   } else if (type_of_csv == 2){
     // Hourly
-    return date_time.tm_hour;
+    return date_time.tm_hour-1;
   } else if (type_of_csv == 3){
     // Yearly
     return 0; // Only one value per year
@@ -243,7 +231,7 @@ void HostEmissions::add_emission_list_to_export(){
   //std::cout << "Current list :" << std::endl;
   //print_emission_list(current_list);
   emission_export_list.push_back(current_list);
-  //std::cout << "Emission list is full!!!!!!!\n" << std::endl;
+  //std::cout << "Total Emission list :\n" << std::endl;
   //print_emission_list(total_emissions_list_);
   //XBT_INFO("Total Emission list is full. It will be added to the result CSV file at the end");
   //Clear the total emissions list
@@ -266,7 +254,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     
     // For each type_csv, calculate the number of lists and the number of steps to add the full consumption
     double unite = 0.0;
-    if (type_of_csv == 0) unite = 86400 * 30; // 30 days
+    if (type_of_csv == 0) unite = 86400 * 30; // 30 days = 1 month
     else if (type_of_csv == 1) unite = 86400; // 1 day
     else if (type_of_csv == 2) unite = 3600; // 1 hour
     else if (type_of_csv == 3) unite = 365 * 86400; // 1 year
@@ -276,66 +264,72 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     } 
     int step = 0;
     int n = time_left - total_duration;
+    int new_time_left = time_left;
     if (n < 0){
       int k = std::abs(n);
-      step = std::ceil(total_duration / unite) + 1;
-      time_left = unite - std::fmod(time_left + total_duration, unite);
+      step = std::ceil(k / unite) + 1;
+      new_time_left -= std::fmod(total_duration, unite);
     }else{
       step = 1;
-      time_left -= total_duration;
+      new_time_left -= total_duration;
     }
 
-    int nb_lists = std::div(step, N).quot;
+    int nb_lists = N>1 ? std::div(step, N).quot : step-1;
+    int start_index = get_index_time(start_time);
     //std::cout << "Nb de list:" <<nb_lists << std::endl;
     //std::cout << "Step:" <<step << std::endl;
-    //std::cout << "Time left:" <<time_left << "(s)" << std::endl;
+    //std::cout << "Time left After Computation:" <<new_time_left << "(s)" << std::endl;
+    //std::cout << "Start Index:" <<start_index << std::endl;
+    
 
-    double conso_per_step = 0.0;
-    if (step == 0){
-      XBT_ERROR("No step to add");
-      return 0.0;
-    }else{
-      conso_per_step = conso_this_step / step;
-      std::cout << "Conso per step:" <<conso_per_step << std::endl;
+    double conso_per_second = 0.0;
+    if (step == 0) return 0.0;
+    else{
+      conso_per_second = conso_this_step / total_duration;
+      //std::cout << "Conso per second:" <<conso_per_second << std::endl;
     }
     
     //Start adding emissions
     double emission_added_total = 0.0;
     double emission_per_step = 0.0;
-    int start_index = get_index_time(start_time);
-    for(int j=0; j<nb_lists; ++j){
-      auto it = total_emissions_list_.begin();
-      std::advance(it, start_index);
+    int current_index = start_index;
+    //int steps_remaining = step;
 
-      auto emission_it = list_emission_value.begin();
-      std::advance(emission_it, start_index);
 
-      for (int i = 0; i < N; i++) {
-        emission_per_step = conso_per_step * (*emission_it);
-        emission_added_total += emission_per_step;
-        //std::cout << "Emission IT (pt1) :" <<(*emission_it) << std::endl;
-        *it += emission_per_step;
-        ++it;
-        ++emission_it;
-        step -= 1;
-      }
-      start_index = 0;
-      add_emission_list_to_export();
-    }
-    // Finish adding emissions
     auto it = total_emissions_list_.begin();
-    std::advance(it, start_index);
-
+    std::advance(it, current_index);
     auto emission_it = list_emission_value.begin();
-    std::advance(emission_it, start_index);
-    for (int i = 0; i < step; i++) {
-      emission_per_step = conso_per_step * (*emission_it);
+    std::advance(emission_it, current_index);
+
+    for (int steps_remaining = step; steps_remaining > 0; steps_remaining--) {
+      if (steps_remaining == 1) {
+        // Last step, we need to handle the last step duration
+        emission_per_step = conso_per_second * (*emission_it) * (unite - new_time_left);
+      } else if(steps_remaining == step) {
+        // First step, we need to handle the last step duration
+        emission_per_step = conso_per_second * (*emission_it) * (time_left); 
+      }else{
+        // Intermediate steps, we can use the full unite
+        emission_per_step = conso_per_second * (*emission_it) * unite;
+      }
       emission_added_total += emission_per_step;
-      //std::cout << "Emission IT (pt2) :" <<(*emission_it) << std::endl;
+      //std::cout << "Emission IT :" <<(*emission_it) << std::endl;
       *it += emission_per_step;
       ++it;
       ++emission_it;
+      current_index++;
+      //std::cout << "\tCurrent index :" <<current_index << std::endl;
+      //std::cout << "\tEmission per step :" <<emission_per_step << std::endl;
+      //std::cout << "\tEmission added total :" <<emission_added_total << std::endl;
+      if ((current_index >= N && N>1) || (current_index >= N && N ==1 & n < 0)) {
+        add_emission_list_to_export();
+        current_index = 0;
+        it = total_emissions_list_.begin();
+        emission_it = list_emission_value.begin();
+      }
     }
+
+    time_left = new_time_left;
     return emission_added_total;
 }
 
@@ -344,13 +338,13 @@ void HostEmissions::update() {
   double start_time  = last_updated_;
   double finish_time = simgrid::s4u::Engine::get_clock();
   if (start_time < finish_time) {
+    
     double new_conso_joule = sg_host_get_consumed_energy(host_);
-    //std::cout << "Conso before update  = " <<conso_total_joule << "(J); Conso 2 = " <<new_conso_joule << "(J)" << std::endl;
+    //std::cout << "Conso before update  = " <<conso_total_joule << "(J); Conso after update = " <<new_conso_joule << "(J)" << std::endl;
     
     double new_conso_this_step = JouleTokWattH(new_conso_joule - conso_total_joule);
     conso_total_joule =new_conso_joule;
     
-    // TODO Trace: Trace energy_this_step from start_time to finish_time in host->getName()
     double emissions_this_step = 0.0;
     double previous_emissions = total_emissions_;
 
@@ -367,14 +361,18 @@ void HostEmissions::update() {
         
     XBT_DEBUG("[update_emission of %s] period=[%.8f-%.8f]; total emission before: %.8f gCO2 -> added now: %.8f gCO2",
       host_->get_cname(), start_time, finish_time, previous_emissions, emissions_this_step);
-    host_was_used_ = true; // Mark the host as used
+    if (!host_was_used_) host_was_used_ = host_->is_on(); // Check if the host is on
+    
     }
 }
 
 
 HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr), last_update_time_(simgrid::s4u::Engine::get_clock()) {
       const char* emission_file = host_->get_property("emission_file");
-
+      if (emission_file == nullptr) {
+        XBT_INFO("No emission file specified for host %s, using default value: %f gCO2/kWh", host_->get_cname(), emission_value);
+        return;
+      }
       std::filesystem::path p = emission_file;
 
       std::filesystem::path t = std::filesystem::current_path() / emission_file;
@@ -383,6 +381,7 @@ HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr), last_update_
       if (type_of_csv == 0) list_size = 12;
       else if (type_of_csv == 1) list_size = 366;
       else if (type_of_csv == 2) list_size = 24;
+      else if (type_of_csv == 3) list_size = 1;
       else list_size = 0;
 
       total_emissions_list_.clear();
@@ -417,7 +416,7 @@ static void on_creation(simgrid::s4u::Host& host)
     //on_creation_ptr(&host);
 
     if (dynamic_cast<simgrid::s4u::VirtualMachine*>(&host)) // Ignore virtual machines
-    return;
+      return;
 
     host.extension_set(new HostEmissions(&host));
 }
@@ -442,7 +441,6 @@ static void on_action_state_change(simgrid::kernel::resource::CpuAction const& a
     }
 }
 
-
 /* This callback is fired either when the host changes its state (on/off) ("onStateChange") or its speed
  * (because the user changed the pstate, or because of external trace events) ("onSpeedChange") */
 static void on_host_change(simgrid::s4u::Host const& h)
@@ -462,7 +460,6 @@ static void on_host_destruction(simgrid::s4u::Host const& host)
     XBT_INFO("Emission of C02 of host %s: %f g", host.get_cname(), host.extension<HostEmissions>()->get_emission());
 }
 
-
 static void on_simulation_end()
 {
   double total_emission = 0.0; // Total energy consumption (whole platform)
@@ -475,7 +472,8 @@ static void on_simulation_end()
       if (host->extension<HostEmissions>()->host_was_used_)
         used_hosts_emission += emission;
       // Export the emission list to a CSV file
-      host->extension<HostEmissions>()->export_emission_list();
+      if ( host->extension<HostEmissions>()->type_of_csv != -1) // If the type of CSV is set, export the emission list
+        host->extension<HostEmissions>()->export_emission_list();
     }
   }
   XBT_INFO("Total CO2 emission: %f g (used hosts: %f g; unused/idle hosts: %f g)",
@@ -498,6 +496,11 @@ static void on_activity_suspend_resume(simgrid::s4u::Activity const& activity)
  * @details Enable energy plugin to get joules consumption of each cpu. Call this function before loading your platform.
  */
 
+/** @ingroup plugin_host_emission
+ *  @brief Enable host emission plugin
+ *  @details Enable emssion plugin to get CO2 emissions based on energy consumption.
+ *         Call this function before loading your platform.
+ */
 void sg_host_emission_plugin_init()
 {
     if (HostEmissions::EXTENSION_ID.valid())
@@ -527,6 +530,11 @@ void sg_host_emission_plugin_init()
     sg_host_energy_plugin_init();
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief updates the emissons of all hosts
+ *
+ * This function iterates over all hosts in the simulation and updates their emissions.
+ */
 void sg_host_emission_update_all()
 {
   simgrid::kernel::actor::simcall_answered([]() {
@@ -539,6 +547,15 @@ void sg_host_emission_update_all()
   });
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Ensures that the Emission plugin is initialized before use.
+ *
+ * This function checks whether the Emission plugin has been properly initialized.
+ * If the plugin is not active, it throws an InitializationError with a descriptive message,
+ * instructing the user to call sg_host_emission_plugin_init() before using any related functions.
+ *
+ * @throws simgrid::xbt::InitializationError if the Emission plugin is not active.
+ */
 static void ensure_plugin_inited()
 {
   if (not HostEmissions::EXTENSION_ID.valid())
@@ -546,25 +563,71 @@ static void ensure_plugin_inited()
                                             "before calling any function related to that plugin.");
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Retrieves the CO2 emissions for a specified host.
+ *
+ * This function returns the total CO2 emission (in appropriate units) 
+ * of a given host. It is based on the energy consumption of the host.
+ *
+ * @param host The host for which to retrieve CO2 emissions.
+ * @return The CO2 emissions value for the specified host in g of CO2.
+ */
 double sg_host_get_emission(const_sg_host_t host) {
     ensure_plugin_inited();
     return host->extension<HostEmissions>()->get_emission();
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Sets the CO2 emission value for the specified host.
+ *
+ * This function updates the CO2 emission metric associated with the given host.
+ *
+ * @param host    The host whose CO2 emission value is to be set.
+ * @param newCO2  The new CO2 emission value to assign to the host in g of CO2 per kWh.
+ */
 void sg_host_setCO2(const_sg_host_t host, double newCO2){
   host->extension<HostEmissions>()->setCO2(newCO2);
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Retrieves the CO2 emissions associated with the specified host.
+ *
+ * This function returns the constant CO2 value (in appropriate units) 
+ * that the computation of emissions is based on.
+ *
+ * @param host The host for which to retrieve CO2 emissions constant.
+ * @return The CO2 emissions value for the specified host in g of CO2 per kWh.
+ */
 double sg_host_get_CO2(const_sg_host_t host){
   ensure_plugin_inited();
   return host->extension<HostEmissions>()->getCO2();
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Retrieves the country associated with a given host.
+ *
+ * This function returns the country information for the specified host
+ * by accessing its HostEmissions extension.
+ *
+ * @param host The host object for which to retrieve the country.
+ * @return A string representing the country of the host.
+ */
 std::string sg_host_get_country(const_sg_host_t host){
   ensure_plugin_inited();
   return host->extension<HostEmissions>()->getCountry();
 }
 
+/** @ingroup plugin_host_emission
+ *  @brief Exports the emission list for a given host.
+ *
+ * This function ensures that the emission plugin is initialized and then
+ * exports the emission list associated with the specified host.
+ * 
+ * The exportion is done automatically at the end of the simulation,
+ * so this function is not mandatory to call.
+ *
+ * @param host The host whose emission list is to be exported.
+ */
 void sg_host_export_emission_list(const_sg_host_t host){
   ensure_plugin_inited();
   host->extension<HostEmissions>()->export_emission_list();

@@ -103,7 +103,7 @@ foreach (example activityset-testany activityset-waitany activityset-waitall act
                  cloud-capping cloud-migration cloud-simple
                  dag-comm dag-from-json-simple dag-from-dax-simple dag-from-dax dag-from-dot-simple dag-from-dot dag-failure dag-io dag-scheduling dag-simple dag-tuto
                  dht-chord dht-kademlia
-                 energy-exec emission-exec
+                 energy-exec emission-exec emission-exec-csv
                   energy-boot energy-link energy-vm energy-exec-ptask energy-wifi
                  engine-filtering engine-run-partial
                  exec-async exec-basic exec-dvfs exec-remote exec-suspend exec-waitfor exec-dependent exec-unassigned
