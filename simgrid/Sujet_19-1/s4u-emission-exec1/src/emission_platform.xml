@@ -11,7 +11,7 @@
       <!--  The list must contain one energetic profile for each previously defined pstate-->
       <prop id="wattage_per_state" value="100.0:93.33333333333333:200.0, 93.0:90.0:170.0, 90.0:90.0:150.0" />
       <prop id="wattage_off" value="10" />
-      <prop id="emission_file" value="../ressources/BE_2024_hourly.csv" />
+      <prop id="emission_file" value="../ressources/AR_2024_monthly.csv" />
     </host>
 
     <host core="1" id="MyHost2" pstate="0" speed="100.0Mf,50.0Mf,20.0Mf">

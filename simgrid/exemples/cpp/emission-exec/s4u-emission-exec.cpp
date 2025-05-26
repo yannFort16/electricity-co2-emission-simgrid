@@ -1,7 +1,7 @@
 #include "simgrid/s4u.hpp"
 
 //Change this to include your full directroy path to emission .h file   
-#include "/home/yann/newSimGrid/simgrid/include/simgrid/plugins/emission.h"
+#include <simgrid/plugins/emission.h>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(s4u_test, "Messages specific for this s4u example");
 namespace sg4 = simgrid::s4u;

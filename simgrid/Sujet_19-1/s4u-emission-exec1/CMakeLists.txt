@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(s4u-emission-exec1)
 
-set(CMAKE_MODULE_PATH "/home/yann/newSimGrid/simgrid")
+set(CMAKE_MODULE_PATH "//home/yann/newSimGrid/simgrid")
 
 # Find SimGrid package
 find_package(SimGrid REQUIRED)

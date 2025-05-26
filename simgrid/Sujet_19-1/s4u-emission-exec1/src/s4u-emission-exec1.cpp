@@ -116,7 +116,7 @@ void testsPt3(){
     XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission = %lf g; Energy consumption = %.0f J",
         sg4::Engine::get_clock() - start, host1->get_speed(), sg_host_get_emission(host1) - emissionBefore, 
         sg_host_get_consumed_energy(host1) - consoBefore);
-
+    
     //Exec qui dure plus d’une heure
     start = sg4::Engine::get_clock();
     emissionBefore = sg_host_get_emission(host1);
@@ -164,8 +164,8 @@ int main (int argc, char *argv[]) {
 
     e.load_platform(argv[1]);
   
-    e.add_actor("Emission Test 1", e.host_by_name("MyHost1"), test_execution);
-    //e.add_actor("Emission Test 2", e.host_by_name("MyHost1"), testsPt3);
+    //e.add_actor("Emission Test 1", e.host_by_name("MyHost1"), test_execution);
+    e.add_actor("Emission Test 2", e.host_by_name("MyHost1"), testsPt3);
     XBT_INFO("End of simulation.");
     e.run();
     return 0;

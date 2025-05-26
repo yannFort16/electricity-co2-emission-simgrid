@@ -250,7 +250,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     } 
     // Total duration
     double total_duration = current_time - start_time;
-    std::cout << "Total duration :" << total_duration << "s"<< std::endl;
+    //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
     
     // For each type_csv, calculate the number of lists and the number of steps to add the full consumption
     double unite = 0.0;
@@ -276,11 +276,11 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
 
     int nb_lists = N>1 ? std::div(step, N).quot : step-1;
     int start_index = get_index_time(start_time);
-    std::cout << "Nb de list:" <<nb_lists << std::endl;
-    std::cout << "Step:" <<step << std::endl;
-    std::cout << "Time left Before Computation:" <<time_left << "(s)" << std::endl;
-    std::cout << "Time left After Computation:" <<new_time_left << "(s)" << std::endl;
-    std::cout << "Start Index:" <<start_index << std::endl;
+    //std::cout << "Nb de list:" <<nb_lists << std::endl;
+    //std::cout << "Step:" <<step << std::endl;
+    //std::cout << "Time left Before Computation:" <<time_left << "(s)" << std::endl;
+    //std::cout << "Time left After Computation:" <<new_time_left << "(s)" << std::endl;
+    //std::cout << "Start Index:" <<start_index << std::endl;
     
 
     double conso_per_second = 0.0;
@@ -307,7 +307,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
       if(steps_remaining == step) {
         // First step, we need to handle the last step duration
         duration_per_step = n<0 ? time_left: total_duration ;
-        std::cout << "Duree 2:" << duration_per_step << "s" << std::endl;
+        //std::cout << "Duree 2:" << duration_per_step << "s" << std::endl;
       }else if (steps_remaining >= 1) {
         // Last step, we need to handle the last step duration
         duration_per_step = (unite - new_time_left);
@@ -315,17 +315,17 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
           duration_per_step = -1; // Avoid division by zero
           XBT_ERROR("Duration per step is negative or zero, check your time left and unite values.");
         }
-        std::cout << "Duree 1:" << duration_per_step << "s" << std::endl;
+        //std::cout << "Duree 1:" << duration_per_step << "s" << std::endl;
       } else {
         // Intermediate steps, we can use the full unite
         duration_per_step = unite;
-        std::cout << "Duree 3:" << duration_per_step << "s" << std::endl;
+        //std::cout << "Duree 3:" << duration_per_step << "s" << std::endl;
       }
       emission_per_step = conso_per_second * duration_per_step * (*emission_it);
-      std::cout << "Conso per step 3:" << conso_per_second * duration_per_step << " kWh" << std::endl;
+      //std::cout << "Conso per step :" << conso_per_second * duration_per_step << " kWh" << std::endl;
       emission_added_total += emission_per_step;
       
-      std::cout << "Emission IT :" <<(*emission_it) << std::endl;
+      //std::cout << "Emission IT :" <<(*emission_it) << std::endl;
       *it += emission_per_step;
       ++it;
       ++emission_it;
