@@ -268,7 +268,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     if (n < 0){
       int k = std::abs(n);
       step = std::ceil(k / unite) + 1;
-      new_time_left = std::fmod(total_duration, unite);
+      new_time_left = unite - std::fmod(total_duration, unite);
     }else{
       step = 1;
       new_time_left -= total_duration;

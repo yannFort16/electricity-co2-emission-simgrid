@@ -11,15 +11,15 @@ $ ${bindir:=.}/s4u-emission-exec-csv ${platfdir}/emission_platform.xml "--log=ro
 > [3640.000000] (1:Emission Test 2@MyHost1) Run a computation of 9E+12 flops
 > [90040.000000] (1:Emission Test 2@MyHost1) Computation done (duration: 86400.00 s). Current peak speed=1E+08 flop/s; CO2 Emission = 846.720000 g; Energy consumption = 10368000 J
 > [90040.000000] (1:Emission Test 2@MyHost1) Run a computation of 3E+14 flops
-> [2768440.000000] (1:Emission Test 2@MyHost1) Computation done (duration: 2678400.00 s). Current peak speed=1E+08 flop/s; CO2 Emission = 51776.795200 g; Energy consumption = 321408000 J
+> [2768440.000000] (1:Emission Test 2@MyHost1) Computation done (duration: 2678400.00 s). Current peak speed=1E+08 flop/s; CO2 Emission = 25459.124800 g; Energy consumption = 321408000 J
 > [2768440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost1_Argentina.csv
 > [2768440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost2_France.csv
 > [2768440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost3_France.csv
-> [2768440.000000] (0:maestro@) Total CO2 emission: 53522.592189 g (used hosts: 52659.187200 g; unused/idle hosts: 863.404989 g)
+> [2768440.000000] (0:maestro@) Total CO2 emission: 26868.431811 g (used hosts: 26341.516800 g; unused/idle hosts: 526.915011 g)
 > [2768440.000000] (0:maestro@) Total energy consumption: 387581600.000000 Joules (used hosts: 332212800.000000 Joules; unused/idle hosts: 55368800.000000)
-> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost1: 52659.187200 g
+> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost1: 26341.516800 g
 > [2768440.000000] (0:maestro@) Energy consumption of host MyHost1: 332212800.000000 Joules
-> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost2: 431.702494 g
+> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost2: 263.457506 g
 > [2768440.000000] (0:maestro@) Energy consumption of host MyHost2: 27684400.000000 Joules
-> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost3: 431.702494 g
+> [2768440.000000] (0:maestro@) Emission of C02 of host MyHost3: 263.457506 g
 > [2768440.000000] (0:maestro@) Energy consumption of host MyHost3: 27684400.000000 Joules
