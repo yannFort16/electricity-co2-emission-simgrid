@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic "CMakeFiles/s4u-emission-exec1.dir/src/s4u-emission-exec1.cpp.o" -o s4u-emission-exec1  -Wl,-rpath,/usr/local/lib /usr/local/lib/libsimgrid.so 

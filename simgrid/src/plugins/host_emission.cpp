@@ -143,7 +143,7 @@ std::list<double> HostEmissions::fill_emission_list(double last_value, int type_
 int HostEmissions::set_emission_file_type(std::string emission_file){
   if (emission_file.find("monthly") != std::string::npos){
     type_of_csv = 0;
-    time_left = 86400.0 * 30; // 1 month in seconds
+    time_left = 86400.0 * 31; // 1 month in seconds Start with 31 days : january
     //XBT_INFO("CSV file Monthly: '%s'", emission_file.c_str());
   }else if (emission_file.find("daily") != std::string::npos){
     type_of_csv = 1;
@@ -250,11 +250,18 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     } 
     // Total duration
     double total_duration = current_time - start_time;
+    int start_index = get_index_time(start_time);
     //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
+    //std::cout << "Conso :" << conso_this_step << " kWh"<< std::endl;
     
     // For each type_csv, calculate the number of lists and the number of steps to add the full consumption
     double unite = 0.0;
-    if (type_of_csv == 0) unite = 86400 * 30; // 30 days = 1 month
+    //Only used for type_of_csv = 0
+    std::list<int> list_size_monthly = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; // Days in each month
+    auto it_jour_mois = list_size_monthly.begin();
+    std::advance(it_jour_mois, start_index);
+
+    if (type_of_csv == 0) unite = 86400 * (*it_jour_mois); // 1 month
     else if (type_of_csv == 1) unite = 86400; // 1 day
     else if (type_of_csv == 2) unite = 3600; // 1 hour
     else if (type_of_csv == 3) unite = 365 * 86400; // 1 year
@@ -267,20 +274,54 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     int new_time_left = time_left;
     if (n < 0){
       int k = std::abs(n);
-      step = std::ceil(k / unite) + 1;
-      new_time_left = unite - std::fmod(total_duration, unite);
+      double total_duration_temp = total_duration; // Subtract the first part duration
+      step = 2; // Start with 2 steps, one for the first part and one for the last part
+
+      
+      //Bad condition, not using time left
+      if (type_of_csv == 0){
+        if (it_jour_mois != list_size_monthly.end()) {
+          ++it_jour_mois; // Move to the next month
+        } else {
+          it_jour_mois = list_size_monthly.begin(); // Reset to the first month
+        }
+        unite = (*it_jour_mois) * 86400; // Days in the month * 86400 seconds
+      }
+
+      while (k > unite) {
+        //std::cout << "Unite :" << unite <<"s"<< std::endl;
+        step += 1;
+        total_duration_temp -= unite;
+        k -= unite; // Subtract the full unite from k
+        if (type_of_csv == 0){
+          if (it_jour_mois != list_size_monthly.end()) {
+            ++it_jour_mois; // Move to the next month
+          } else {
+            it_jour_mois = list_size_monthly.begin(); // Reset to the first month
+          }
+          unite = (*it_jour_mois) * 86400; // Days in the month * 86400 seconds
+        }
+      }
+
+      
+      //total_duration_temp -= k; // Subtract the remaining time
+
+      //step = std::ceil(k / unite) + 1;
+      //new_time_left = unite - total_duration_temp;
+      new_time_left = unite - k; // Update new_time_left with the remaining time
     }else{
       step = 1;
       new_time_left -= total_duration;
     }
 
     int nb_lists = N>1 ? std::div(step, N).quot : step-1;
-    int start_index = get_index_time(start_time);
-    //std::cout << "Nb de list:" <<nb_lists << std::endl;
-    //std::cout << "Step:" <<step << std::endl;
-    //std::cout << "Time left Before Computation:" <<time_left << "(s)" << std::endl;
-    //std::cout << "Time left After Computation:" <<new_time_left << "(s)" << std::endl;
-    //std::cout << "Start Index:" <<start_index << std::endl;
+    
+    /*/Prints debug : 
+    std::cout << "Nb de list:" <<nb_lists << std::endl;
+    std::cout << "Step:" <<step << std::endl;
+    std::cout << "Time left Before Computation: " <<time_left << "(s)" << std::endl;
+    std::cout << "Time left After Computation: " <<new_time_left << "(s)" << std::endl;
+    std::cout << "Start Index:" <<start_index << std::endl;*/
     
 
     double conso_per_second = 0.0;
@@ -302,13 +343,20 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     std::advance(it, current_index);
     auto emission_it = list_emission_value.begin();
     std::advance(emission_it, current_index);
+    it_jour_mois = list_size_monthly.begin();
+    std::advance(it_jour_mois, current_index);
+    
 
     for (int steps_remaining = step; steps_remaining > 0; steps_remaining--) {
+      if (type_of_csv == 0){   
+          unite = (*it_jour_mois) * 86400; // Days in the month * 86400 seconds
+          //std::cout << "Unite M: " << unite <<"s"<< std::endl;
+      }
       if(steps_remaining == step) {
         // First step, we need to handle the last step duration
         duration_per_step = n<0 ? time_left: total_duration ;
         //std::cout << "Duree 2:" << duration_per_step << "s" << std::endl;
-      }else if (steps_remaining >= 1) {
+      }else if (steps_remaining <= 1) {
         // Last step, we need to handle the last step duration
         duration_per_step = (unite - new_time_left);
         if (duration_per_step <= 0) {
@@ -322,25 +370,31 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
         //std::cout << "Duree 3:" << duration_per_step << "s" << std::endl;
       }
       emission_per_step = conso_per_second * duration_per_step * (*emission_it);
-      //std::cout << "Conso per step :" << conso_per_second * duration_per_step << " kWh" << std::endl;
       emission_added_total += emission_per_step;
-      
-      //std::cout << "Emission IT :" <<(*emission_it) << std::endl;
       *it += emission_per_step;
+      
+      /*/Prints debug : 
+      std::cout << "Conso per step :" << conso_per_second * duration_per_step << " kWh" << std::endl;
+      std::cout << "Emission IT :" <<(*emission_it) << std::endl;
+      std::cout << "\tCurrent index :" <<current_index << std::endl;
+      std::cout << "\tEmission per step :" <<emission_per_step << std::endl;
+      std::cout << "\tEmission added total :" <<emission_added_total << std::endl;*/
       ++it;
       ++emission_it;
       current_index++;
-      //std::cout << "\tCurrent index :" <<current_index << std::endl;
-      //std::cout << "\tEmission per step :" <<emission_per_step << std::endl;
-      //std::cout << "\tEmission added total :" <<emission_added_total << std::endl;
+      if (it_jour_mois != list_size_monthly.end() && type_of_csv == 0) {
+            ++it_jour_mois; // Move to the next month
+      }
       if ((current_index >= N && N>1) || (current_index >= N && N ==1 & n < 0)) {
         add_emission_list_to_export();
         current_index = 0;
         it = total_emissions_list_.begin();
         emission_it = list_emission_value.begin();
+        if(type_of_csv == 0) {
+          it_jour_mois = list_size_monthly.begin(); // Reset to the first month
+        }
       }
     }
-
     time_left = new_time_left;
     return emission_added_total;
 }
@@ -355,7 +409,7 @@ void HostEmissions::update() {
     //std::cout << "Conso before update  = " <<conso_total_joule << "(J); Conso after update = " <<new_conso_joule << "(J)" << std::endl;
     
     double new_conso_this_step = JouleTokWattH(new_conso_joule - conso_total_joule);
-    conso_total_joule =new_conso_joule;
+    conso_total_joule = new_conso_joule;
     
     double emissions_this_step = 0.0;
     double previous_emissions = total_emissions_;

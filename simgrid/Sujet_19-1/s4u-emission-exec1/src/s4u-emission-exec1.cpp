@@ -143,7 +143,7 @@ void testsPt3(){
     start = sg4::Engine::get_clock();
     emissionBefore = sg_host_get_emission(host1);
     consoBefore = sg_host_get_consumed_energy(host1);
-    flopAmount = flopAmount*31;
+    flopAmount = flopAmount*32;
     XBT_INFO("Run a computation of %.0E flops", flopAmount);
     sg4::this_actor::execute(flopAmount);
     XBT_INFO("Computation done (duration: %.2f s). Current peak speed=%.0E flop/s; CO2 Emission = %lf g; Energy consumption = %.0f J",
