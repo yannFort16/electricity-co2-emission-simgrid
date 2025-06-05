@@ -122,6 +122,7 @@ double HostEmissions::read_emission_file(std::filesystem::path emission_file){
       }
   }
   file.close();
+  //print_emission_list(list_emission_value);
   return newEmissionValue;
 }
 
@@ -130,7 +131,7 @@ std::list<double> HostEmissions::fill_emission_list(double last_value, int type_
     int target_size = 0;
     if (type_of_csv == 0) target_size = 12;
     else if (type_of_csv == 1) target_size = 366;
-    else if (type_of_csv == 2) target_size = 24;
+    else if (type_of_csv == 2) target_size = 24; // 24 hours * 366 days
     else if (type_of_csv == 3) target_size = 1;
     else return new_list;
 
@@ -242,7 +243,9 @@ void HostEmissions::add_emission_list_to_export(){
 
 double HostEmissions::add_emission_to_list(double conso_this_step, double start_time, double current_time) {
   //Return emission added to the list
-    int N = static_cast<int>(total_emissions_list_.size());
+    //int N = static_cast<int>(total_emissions_list_.size());
+    int N = static_cast<int>(list_emission_value.size());
+    //std::cout << "N :" << N << std::endl;
     
     if (N == 0 || start_time >= current_time){
         XBT_ERROR("No emissions to add or invalid time range.");
@@ -250,10 +253,11 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     } 
     // Total duration
     double total_duration = current_time - start_time;
-    int start_index = get_index_time(start_time);
+    int start_index = 0;
+    if(type_of_csv == 2) start_index = static_cast<int>(start_time / 3600.0); // Hourly
+    else start_index = get_index_time(start_time);  
     //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
     //std::cout << "Conso :" << conso_this_step << " kWh"<< std::endl;
-    
     // For each type_csv, calculate the number of lists and the number of steps to add the full consumption
     double unite = 0.0;
     //Only used for type_of_csv = 0
@@ -394,6 +398,14 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
           it_jour_mois = list_size_monthly.begin(); // Reset to the first month
         }
       }
+      if (current_index%24 == 0 && type_of_csv == 2) {
+        add_emission_list_to_export(); // Reset the list every 24 hours
+        // Reset to the first hour of the day
+        current_index = 0;
+        it = total_emissions_list_.begin();
+        
+        ///if (is end of list) emission_it = list_emission_value.begin();
+      }
     }
     time_left = new_time_left;
     return emission_added_total;
@@ -446,7 +458,7 @@ HostEmissions::HostEmissions(simgrid::s4u::Host* ptr) : host_(ptr), last_update_
       int list_size = 0;
       if (type_of_csv == 0) list_size = 12;
       else if (type_of_csv == 1) list_size = 366;
-      else if (type_of_csv == 2) list_size = 24;
+      else if (type_of_csv == 2) list_size = 24; // 24 hours * 366 days
       else if (type_of_csv == 3) list_size = 1;
       else list_size = 0;
 

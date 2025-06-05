@@ -1,6 +1,5 @@
 #include "simgrid/s4u.hpp"
 
-//Change this to include your full directroy path to emission .h file   
 #include <simgrid/plugins/emission.h>
 #include <simgrid/plugins/energy.h>
 
