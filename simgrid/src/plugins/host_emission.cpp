@@ -245,12 +245,14 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
   //Return emission added to the list
     //int N = static_cast<int>(total_emissions_list_.size());
     int N = static_cast<int>(list_emission_value.size());
-    //std::cout << "N :" << N << std::endl;
-    
     if (N == 0 || start_time >= current_time){
         XBT_ERROR("No emissions to add or invalid time range.");
         return 0.0;
-    } 
+    }
+    
+    
+    //std::cout << "N :" << N << std::endl;
+     
     // Total duration
     double total_duration = current_time - start_time;
     int start_index = 0;
