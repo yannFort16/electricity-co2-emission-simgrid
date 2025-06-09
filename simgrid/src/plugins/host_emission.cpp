@@ -256,7 +256,11 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     // Total duration
     double total_duration = current_time - start_time;
     int start_index = 0;
-    if(type_of_csv == 2) start_index = static_cast<int>(start_time / 3600.0) % 24; // Hourly
+    int index_emission = 0;
+    if(type_of_csv == 2){ 
+      index_emission = static_cast<int>(start_time / 3600.0);
+      start_index = index_emission % 24; // Hourly
+    }
     else start_index = get_index_time(start_time);  
     //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
     //std::cout << "Conso :" << conso_this_step << " kWh"<< std::endl;
@@ -348,7 +352,8 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     auto it = total_emissions_list_.begin();
     std::advance(it, current_index);
     auto emission_it = list_emission_value.begin();
-    std::advance(emission_it, current_index);
+    if (type_of_csv == 2) std::advance(emission_it, index_emission);
+    else std::advance(emission_it, current_index);
     it_jour_mois = list_size_monthly.begin();
     std::advance(it_jour_mois, current_index);
     

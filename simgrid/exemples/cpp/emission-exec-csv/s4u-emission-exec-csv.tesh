@@ -28,7 +28,7 @@ $ ${bindir:=.}/s4u-emission-exec-csv ${platfdir}/emission_platform.xml "--log=ro
 >  CO2 Emission = 1774.197711 g; Energy consumption = 17280000 J
 > [90040.000000] (3:Emission Test 3@MyHost3) Run a computation of 3E+14 flops
 > [2854840.000000] (1:Emission Test 1@MyHost1) Computation  of 3E+14 flops done (duration: 2764800.00 s). Current peak speed=1E+08 flop/s;
->  CO2 Emission = 12535.050907 g; Energy consumption = 331776000 J
+>  CO2 Emission = 12648.656520 g; Energy consumption = 331776000 J
 > [2854840.000000] (1:Emission Test 1@MyHost1) Sleep for 1 hour
 > [2854840.000000] (2:Emission Test 2@MyHost2) Computation  of 3E+14 flops done (duration: 2764800.00 s). Current peak speed=1E+08 flop/s;
 >  CO2 Emission = 5262.122889 g; Energy consumption = 552960000 J
@@ -39,9 +39,9 @@ $ ${bindir:=.}/s4u-emission-exec-csv ${platfdir}/emission_platform.xml "--log=ro
 > [2858440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost1_Belgium.csv
 > [2858440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost2_France.csv
 > [2858440.000000] (0:maestro@) Emission export list exported to ../ressources/exports/emission_MyHost3_Bahrain.csv
-> [2858440.000000] (0:maestro@) Total CO2 emission: 76795.271607 g (used hosts: 76795.271607 g; unused/idle hosts: 0.000000 g)
+> [2858440.000000] (0:maestro@) Total CO2 emission: 76912.234720 g (used hosts: 76912.234720 g; unused/idle hosts: 0.000000 g)
 > [2858440.000000] (0:maestro@) Total energy consumption: 1485596800.000000 Joules (used hosts: 1485596800.000000 Joules; unused/idle hosts: 0.000000)
-> [2858440.000000] (0:maestro@) Emission of C02 of host MyHost1: 12732.711607 g
+> [2858440.000000] (0:maestro@) Emission of C02 of host MyHost1: 12849.674720 g
 > [2858440.000000] (0:maestro@) Energy consumption of host MyHost1: 342940800.000000 Joules
 > [2858440.000000] (0:maestro@) Emission of C02 of host MyHost2: 5438.655111 g
 > [2858440.000000] (0:maestro@) Energy consumption of host MyHost2: 571328000.000000 Joules
