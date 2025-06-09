@@ -150,7 +150,6 @@ void testsPt3(){
     XBT_INFO("Computation  of %.0E flops done (duration: %.2f s). Current peak speed=%.0E flop/s;\n CO2 Emission = %lf g; Energy consumption = %.0f J",
         flopAmount, sg4::Engine::get_clock() - start, actor->get_speed(), sg_host_get_emission(actor) - emissionBefore, 
         sg_host_get_consumed_energy(actor) - consoBefore);
-    
     //Idle
     XBT_INFO("Sleep for 1 hour");
     sg4::this_actor::sleep_for(3600);

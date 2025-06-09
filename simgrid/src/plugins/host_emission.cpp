@@ -256,7 +256,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
     // Total duration
     double total_duration = current_time - start_time;
     int start_index = 0;
-    if(type_of_csv == 2) start_index = static_cast<int>(start_time / 3600.0); // Hourly
+    if(type_of_csv == 2) start_index = static_cast<int>(start_time / 3600.0) % 24; // Hourly
     else start_index = get_index_time(start_time);  
     //std::cout << "Total duration :" << total_duration << "s"<< std::endl;
     //std::cout << "Conso :" << conso_this_step << " kWh"<< std::endl;
@@ -359,7 +359,7 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
           //std::cout << "Unite M: " << unite <<"s"<< std::endl;
       }
       if(steps_remaining == step) {
-        // First step, we need to handle the last step duration
+        // First step, we need to handle the first step duration
         duration_per_step = n<0 ? time_left: total_duration ;
         //std::cout << "Duree 2:" << duration_per_step << "s" << std::endl;
       }else if (steps_remaining <= 1) {
@@ -379,8 +379,8 @@ double HostEmissions::add_emission_to_list(double conso_this_step, double start_
       emission_added_total += emission_per_step;
       *it += emission_per_step;
       
-      /*/Prints debug : 
-      std::cout << "Conso per step :" << conso_per_second * duration_per_step << " kWh" << std::endl;
+      //Prints debug : 
+      /*std::cout << "Conso per step :" << conso_per_second * duration_per_step << " kWh" << std::endl;
       std::cout << "Emission IT :" <<(*emission_it) << std::endl;
       std::cout << "\tCurrent index :" <<current_index << std::endl;
       std::cout << "\tEmission per step :" <<emission_per_step << std::endl;
